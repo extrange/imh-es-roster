@@ -1,0 +1,5 @@
+icalendar
+openpyxl
+python-dateutil
+python-dotenv
+rich
