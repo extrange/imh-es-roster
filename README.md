@@ -12,13 +12,16 @@ This utility converts ES rosters in `.xlsx` to `.ical` files which can be import
 
 ## Usage
 
-- In the base directory, create a `.env` file with variable `MY_NAME` set to your name as it appears in the roster
-- First, extract the schedule from the `.xlsx` file to JSON with `schedule_to_json.py`
-- Then, export to iCal with `json_to_ical.py`
+You need to have [Python][python] 3.10 or later installed before proceeding.
 
-## Todo
+- Install requirements: `pip install -r requirements.txt`
+- First, extract the schedule from the `.xlsx` file to JSON:
+    - `python schedule_to_json.py <ROSTER_FILE> --name <NAME>` where `<NAME>` is your name exactly as it appears in the roster with quotes, for example `'John Doe'`
+- Then, export to iCal:
+    - `python json_to_ical.py <JSON_FILE> --month=<MONTH>`
+        - `<JSON_FILE>` is the path to the `roster.json` file generated in teh previous step
+        - `<MONTH>` is the month as an integer, where `Jan=1`, `Feb=2` etc.
 
-- Commandline interface with Typer
-- Usage instructions
 
 [icalendar]: https://icalendar.org/
+[python]: https://www.python.org/downloads/

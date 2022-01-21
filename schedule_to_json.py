@@ -3,30 +3,32 @@ Extract the schedule from the XLSX roster to a JSON file
 """
 import json
 from pathlib import Path
-from typing import Tuple, Union
 
-from dotenv import dotenv_values
+import typer
 from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
-from rich.console import Console
+from rich import print
 from rich.table import Table
 
 # The row in the sheet to extract dates from
 DATE_ROW = 5
-MY_NAME = dotenv_values('.env')['MY_NAME']
-
-console = Console()
 
 
-def find_my_name(ws: Worksheet) -> Tuple[str, int]:
-    """Find the row with my schedule"""
+def find_name(ws: Worksheet, name: str) -> tuple[str, int]:
+    """
+    Find the row with the schedule for `name`
+
+    Must be an exact match
+    """
     for row in ws.rows:
         for cell in row:
-            if str(cell.value).strip() == MY_NAME:
+            if str(cell.value).strip() == name:
                 return (cell.column_letter, cell.row)
+    else:
+        raise Exception(f"Couldn't find '{name}' in {ws}")
 
 
-def find_filled_cell(row, first=True) -> Union[str, None]:
+def find_filled_cell(row, first=True) -> str | None:
     """
     If first==True, find first column in the row which has a value
     Else find the last
@@ -36,7 +38,7 @@ def find_filled_cell(row, first=True) -> Union[str, None]:
             return cell.column_letter
 
 
-def print_schedule(schedule):
+def print_schedule(schedule) -> None:
     """
     Pretty-print the output JSON for user verification.
     """
@@ -45,15 +47,25 @@ def print_schedule(schedule):
     table.add_column("Shift")
     for day, shift in schedule:
         table.add_row(str(day), shift)
-    console.print(table)
+    print(table)
 
 
-def main(file: Path):
-    wb = load_workbook(file)
+def main(
+    file: Path = typer.Argument(..., help="Path to the Excel roster file"),
+    name: str = typer.Option(
+        ..., help="Name to extract schedule for. Note: Must be an exact match"
+    ),
+) -> None:
+    """
+    Extracts the schedule from the .xlsx roster to a JSON file.
+
+    Doesn't care about what month it is.
+    """
+    wb = load_workbook(str(file))
     ws = wb[wb.sheetnames[0]]  # Get first sheet
 
     # Detect row to extract schedule from
-    schedule_row = find_my_name(ws)[1]
+    schedule_row = find_name(ws, name)[1]
 
     # Detect start and end column of date range
     date_start_col = find_filled_cell(ws[DATE_ROW])
@@ -70,9 +82,11 @@ def main(file: Path):
     print_schedule(schedule)
 
     output_path = Path(file.stem + ".json")
-    json.dump(schedule, output_path.open("w", encoding="utf8"), indent=2)
-    console.print(f"Wrote to [cyan]{output_path}[/cyan]")
+    json.dump(schedule, output_path.open("w", encoding="utf8"))
+    print(f"Wrote to [cyan]{output_path}[/cyan]")
 
 
 if __name__ == "__main__":
-    main(Path("roster.xlsx"))
+    app = typer.Typer(add_completion=False)
+    app.command()(main)
+    app()

@@ -1,5 +1,6 @@
-icalendar
-openpyxl
-python-dateutil
-python-dotenv
-rich
+icalendar==4.0.9
+openpyxl==3.0.9
+python-dateutil==2.8.2
+python-dotenv==0.19.2
+rich==11.0.0
+typer==0.4.0

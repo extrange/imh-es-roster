@@ -1,2 +1,2 @@
-black
-ipython
+black==21.12b0
+ipykernel==6.7.0
